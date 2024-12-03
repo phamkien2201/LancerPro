@@ -29,12 +29,14 @@ public class OrderResponse {
     String note;
     Date orderDate;
     String status;
+    Float discount;
+    Float fee;
     Float totalMoney;
     String shippingMethod;
-    String shippingAddress;
     LocalDate shippingDate;
     String trackingNumber;
     String paymentMethod;
     Boolean active;
     List<OrderDetail> orderDetailId;
+    String paymentUrl;
 }

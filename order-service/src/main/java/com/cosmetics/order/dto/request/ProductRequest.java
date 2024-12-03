@@ -12,6 +12,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductRequest {
 
+    String id;
     String name;
     Float price;
     Float quantity;

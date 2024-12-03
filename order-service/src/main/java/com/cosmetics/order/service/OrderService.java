@@ -1,6 +1,7 @@
 package com.cosmetics.order.service;
 
-import com.cosmetics.order.dto.request.CartItem;
+import com.cosmetics.order.configuration.VNPAYConfig;
+import com.cosmetics.order.dto.request.CartItemRequest;
 import com.cosmetics.order.dto.request.OrderRequest;
 import com.cosmetics.order.dto.response.OrderListResponse;
 import com.cosmetics.order.dto.response.OrderResponse;
@@ -41,6 +42,8 @@ public class OrderService {
     ProductClient productClient;
     OrderDetailRepository orderDetailRepository;
     UserClient userClient;
+    DistanceService distanceService;
+    private static final String DEFAULT_ADDRESS = "106.70000,10.77689";
 
     public OrderResponse createOrder(OrderRequest request) {
 
@@ -48,37 +51,96 @@ public class OrderService {
         if (user == null || user.getResult() == null) {
             throw new RuntimeException("User not found for ID: " + request.getUserId());
         }
+        String warehouseAddress = "33 Đường Hiệp Thành 22, Hiệp Thành, Quận 12, Hồ Chí Minh, Việt Nam";
+        float shippingFee = calculateShippingFee(request.getAddress(), request.getTotalMoney());
 
        Order order = orderMapper.toOrder(request);
-       order = orderRepository.save(order);
+        order.setFee(shippingFee);
+        order = orderRepository.save(order);
         //
         List<OrderDetail> orderDetails = new ArrayList<>();
-        for (CartItem cartItem : request.getCartItemsId()) {
+        for (CartItemRequest cartItemRequest : request.getCartItemsIdRequest()) {
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrderId(order.getId());
 
-            String productId = cartItem.getProductId();
-            Float quantity = cartItem.getQuantity();
+            String productId = cartItemRequest.getProductId();
+            Float requestedQuantity = cartItemRequest.getQuantity();
 
-            ApiResponse<ProductResponse> product = productClient.getProductById(productId);
-            if (product == null || product.getResult() == null) {
+            ApiResponse<ProductResponse> productResponse = productClient.getProductById(productId);
+            if (productResponse == null || productResponse.getResult() == null) {
                 throw new RuntimeException("Product not found for ID: " + productId);
             };
+            ProductResponse product = productResponse.getResult();
+            Float currentQuantity = product.getQuantity();
+
+            // Kiểm tra số lượng có đủ hay không
+            if (currentQuantity < requestedQuantity) {
+                throw new RuntimeException("Insufficient quantity for product ID: " + productId);
+            }
+
+            Float newQuantity = currentQuantity - requestedQuantity;
+            productClient.updateProductQuantity(productId, newQuantity);
             orderDetail.setProductId(productId);
-            orderDetail.setQuantity(quantity);
-            orderDetail.setPrice(product.getResult().getPrice());
+            orderDetail.setQuantity(requestedQuantity);
+            orderDetail.setPrice(product.getPrice());
             orderDetails.add(orderDetail);
         }
         orderDetailRepository.saveAll(orderDetails);
-        return orderMapper.toOrderResponse(order);
+
+        String vnpUrl = VNPAYConfig.createVNPayPaymentUrl(
+                order.getId(),
+                "Thanh toán đơn hàng #" + order.getId(),
+                order.getTotalMoney(),
+                "http://localhost:8084/orders/vnpay/return"
+        );
+
+        OrderResponse response = orderMapper.toOrderResponse(order);
+        response.setPaymentUrl(vnpUrl); // Gán URL thanh toán
+        return response;
     }
+
+//    public float calculateShippingFee(String originAddress, String destinationAddress, float totalMoney) {
+//        // Chuyển đổi địa chỉ thành tọa độ
+//        String originCoordinates = distanceService.convertAddressToCoordinates(originAddress);
+//        String destinationCoordinates = distanceService.convertAddressToCoordinates(destinationAddress);
+//
+//        // Tính khoảng cách
+//        double distance = distanceService.calculateDistance(originCoordinates, destinationCoordinates);
+//
+//        // Tính phí giao hàng
+//        if (totalMoney > 300 || distance < 2) {
+//            return 0; // Miễn phí giao hàng
+//        } else if (distance < 5) {
+//            return 20; // Phí giao hàng 20
+//        } else if (distance < 10) {
+//            return 50; // Phí giao hàng 50
+//        } else {
+//            return 100; // Phí giao hàng 100
+//        }
+//    }
+    public float calculateShippingFee(String address, Float totalMoney) {
+        double distance = distanceService.calculateDistance(DEFAULT_ADDRESS, address);
+
+        if (totalMoney != null && totalMoney > 300000) {
+            return 0;
+        }
+        if (distance < 2) {
+            return 0;
+        } else if (distance < 5) {
+            return 20000;
+        } else if (distance < 10) {
+            return 50000;
+        } else {
+            return 100000;
+    }
+}
 
     public OrderResponse getOrder(String id) {
         return orderMapper.toOrderResponse(
                 orderRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED)));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+
     public OrderResponse updateOrder(String orderId, OrderRequest request) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 

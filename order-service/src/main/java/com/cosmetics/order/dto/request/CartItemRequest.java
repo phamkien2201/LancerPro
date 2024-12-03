@@ -9,11 +9,11 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CartItem {
+public class CartItemRequest {
 
     @Field("product_id")
-    private String productId;
+    String productId;
 
-    private Float quantity;
-    private Float price;
+    Float quantity;
+    Float price;
 }

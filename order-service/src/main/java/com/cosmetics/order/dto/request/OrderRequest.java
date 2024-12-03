@@ -1,6 +1,5 @@
 package com.cosmetics.order.dto.request;
 
-import com.cosmetics.order.entity.OrderDetail;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,14 +24,16 @@ public class OrderRequest {
     String phoneNumber;
     String address;
     String status;
+    Date orderDate;
+    Float discount;
+    Float fee;
     String note;
     Float totalMoney;
     String shippingMethod;
-    String shippingAddress;
     LocalDate shippingDate;
     String trackingNumber;
     String paymentMethod;
 
     @Field("cart_items")
-    List<CartItem> cartItemsId;
+    List<CartItemRequest> cartItemsIdRequest;
 }

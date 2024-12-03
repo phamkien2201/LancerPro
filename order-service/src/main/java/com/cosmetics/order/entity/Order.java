@@ -43,8 +43,7 @@ public class Order {
     @Field("shipping_method")
     String shippingMethod;
 
-    @Field("shipping_address")
-    String shippingAddress;
+    Float discount;
 
     @Field("shipping_date")
     LocalDate shippingDate;
@@ -54,6 +53,8 @@ public class Order {
 
     @Field("payment_method")
     String paymentMethod;
+
+    Float fee;
 
     Boolean active;//danh cho admin
 

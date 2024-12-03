@@ -118,10 +118,15 @@ public class ProductController {
             limit = 20;
         }
 
-
         ProductListResponse productListResponse = productService.findProductsByBrandId(brandId, page, limit);
         return ResponseEntity.ok(productListResponse);
     }
 
-
+    @PutMapping("/{id}/quantity")
+    public ResponseEntity<Void> updateProductQuantity(
+            @PathVariable("id") String productId,
+            @RequestParam("newQuantity") Float newQuantity) {
+        productService.updateProductQuantity(productId, newQuantity);
+        return ResponseEntity.noContent().build();
+    }
 }

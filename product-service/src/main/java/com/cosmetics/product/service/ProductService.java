@@ -137,5 +137,12 @@ public class ProductService {
                 .build();
     }
 
+    public void updateProductQuantity(String productId, Float newQuantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+        product.setQuantity(newQuantity);
+        productRepository.save(product);
+    }
+
 
 }
