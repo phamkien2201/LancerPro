@@ -46,7 +46,6 @@ public class CartService {
     }
 
     public CartResponse addProductToCart(String userId, CartItemRequest request) {
-
         Cart cart = cartRepository.findByUserId(userId);
         if (cart == null) {
             cart = Cart.builder()
@@ -57,22 +56,54 @@ public class CartService {
         }
         ProductResponse product = productClient.getProductById(request.getProductId()).getResult();
 
-        boolean itemExists = cart.getCartItemIds().stream()
-                .anyMatch(cartItem -> cartItem.getProductId().equals(request.getProductId()));
-        if (itemExists) {
-            throw new IllegalArgumentException("Product already in cart");
+        CartItem existingItem = cart.getCartItemIds().stream()
+                .filter(cartItem -> cartItem.getProductId().equals(request.getProductId()))
+                .findFirst()
+                .orElse(null);
+
+        if (existingItem != null) {
+            existingItem.setQuantity(existingItem.getQuantity() + request.getQuantity());
+        } else {
+            CartItem newCartItem = CartItem.builder()
+                    .productId(request.getProductId())
+                    .quantity(request.getQuantity())
+                    .price(product.getPrice())
+                    .build();
+
+            cart.getCartItemIds().add(newCartItem);
         }
-        CartItem newCartItem = CartItem.builder()
-                .productId(request.getProductId())
-                .quantity(request.getQuantity())
-                .price(product.getPrice())
-                .build();
-
-        cart.getCartItemIds().add(newCartItem);
-
         cartRepository.save(cart);
         return cartMapper.toCartResponse(cart);
     }
+
+    public void reduceProductQuantity(String userId, String productId, int quantityToReduce) {
+        Cart cart = cartRepository.findByUserId(userId);
+        if (cart == null) {
+            throw new IllegalArgumentException("Cart not found for userId: " + userId);
+        }
+
+        CartItem existingItem = cart.getCartItemIds().stream()
+                .filter(cartItem -> cartItem.getProductId().equals(productId))
+                .findFirst()
+                .orElse(null);
+
+        if (existingItem == null) {
+            throw new IllegalArgumentException("Product not found in cart: " + productId);
+        }
+
+        if (existingItem.getQuantity() < quantityToReduce) {
+            throw new IllegalArgumentException("Cannot reduce more than existing quantity.");
+        }
+
+        existingItem.setQuantity(existingItem.getQuantity() - quantityToReduce);
+
+        if (existingItem.getQuantity() == 0) {
+            cart.getCartItemIds().remove(existingItem);
+        }
+
+        cartRepository.save(cart);
+    }
+
 
     public void clearCart(String userId) {
         Cart cart = cartRepository.findByUserId(userId);
