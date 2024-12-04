@@ -2,6 +2,7 @@ package com.cosmetics.order.configuration;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -15,34 +16,32 @@ public class VNPAYConfig {
     private static final String LOCALE = "vn";
 
     public static String createVNPayPaymentUrl(String txnRef, String orderInfo, float amount, String returnUrl) {
-        // Tạo tham số yêu cầu gửi lên VNPay
-        Map<String, String> vnp_Params = new HashMap<>();
-        vnp_Params.put("vnp_Version", "2.1.0");
-        vnp_Params.put("vnp_TmnCode", MERCHANT_CODE);
-        vnp_Params.put("vnp_TxnRef", txnRef);
-        vnp_Params.put("vnp_Amount", String.valueOf(amount * 100));
-        vnp_Params.put("vnp_CurrCode", CURRENCY_CODE);
-        vnp_Params.put("vnp_OrderInfo", orderInfo);
-        vnp_Params.put("vnp_Locale", LOCALE);
-        vnp_Params.put("vnp_ReturnUrl", returnUrl);
+        try {
+            Map<String, String> vnp_Params = new HashMap<>();
+            vnp_Params.put("vnp_Version", "2.1.0");
+            vnp_Params.put("vnp_TmnCode", MERCHANT_CODE);
+            vnp_Params.put("vnp_TxnRef", txnRef);
+            vnp_Params.put("vnp_Amount", String.valueOf((long) (amount * 100)));
+            vnp_Params.put("vnp_CurrCode", CURRENCY_CODE);
+            vnp_Params.put("vnp_OrderInfo", orderInfo);
+            vnp_Params.put("vnp_Locale", LOCALE);
+            vnp_Params.put("vnp_ReturnUrl", returnUrl);
 
-        // Tạo chữ ký bảo mật
-        String vnp_SecureHash = generateSecureHash(vnp_Params, SECRET_KEY);
-        vnp_Params.put("vnp_SecureHash", vnp_SecureHash);
+            String vnp_SecureHash = generateSecureHash(vnp_Params, SECRET_KEY);
+            vnp_Params.put("vnp_SecureHash", vnp_SecureHash);
 
-        // Tạo URL thanh toán
-        StringBuilder vnpUrlBuilder = new StringBuilder(VN_PAY_URL);
-        vnpUrlBuilder.append("?");
-        vnp_Params.forEach((key, value) -> {
-            try {
-                vnpUrlBuilder.append(key).append("=").append(URLEncoder.encode(value, "UTF-8")).append("&");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+            StringBuilder vnpUrlBuilder = new StringBuilder(VN_PAY_URL);
+            vnpUrlBuilder.append("?");
+            for (Map.Entry<String, String> entry : vnp_Params.entrySet()) {
+                vnpUrlBuilder.append(entry.getKey()).append("=")
+                        .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8)).append("&");
             }
-        });
-
-        return vnpUrlBuilder.toString();
+            return vnpUrlBuilder.substring(0, vnpUrlBuilder.length() - 1); // Remove trailing "&"
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating VNPay URL", e);
+        }
     }
+
 
     public static String generateSecureHash(Map<String, String> vnp_Params, String secretKey) {
         List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
