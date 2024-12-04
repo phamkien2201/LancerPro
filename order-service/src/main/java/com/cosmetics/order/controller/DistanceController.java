@@ -17,27 +17,16 @@ public class DistanceController {
 
     @GetMapping
     public ApiResponse<Double> getDistance(
-            @RequestParam String origin,
-            @RequestParam String destination) {
-        double distance = distanceService.calculateDistance(origin, destination);
+            @RequestParam String originAddress,
+            @RequestParam String destinationAddress) {
+        String originCoordinates = distanceService.getCoordinatesFromAddress(originAddress);
+        String destinationCoordinates = distanceService.getCoordinatesFromAddress(destinationAddress);
+        double distance = distanceService.calculateDistance(originCoordinates, destinationCoordinates);
         return ApiResponse.<Double>builder()
                 .code(1000)
                 .result(distance)
                 .build();
     }
 
-//    @GetMapping("/by-address")
-//    public ApiResponse<Double> getDistanceByAddress(
-//            @RequestParam String originAddress,
-//            @RequestParam String destinationAddress) {
-//        String originCoordinates = distanceService.convertAddressToCoordinates(originAddress);
-//        String destinationCoordinates = distanceService.convertAddressToCoordinates(destinationAddress);
-//
-//        double distance = distanceService.calculateDistance(originCoordinates, destinationCoordinates);
-//
-//        return ApiResponse.<Double>builder()
-//                .code(1000)
-//                .result(distance)
-//                .build();
-//    }
+
 }

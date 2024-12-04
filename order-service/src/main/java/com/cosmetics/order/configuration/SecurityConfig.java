@@ -44,14 +44,16 @@ public class SecurityConfig {
                 .permitAll()
 
                 .anyRequest()
-                .authenticated()).cors(cors -> cors
-                .configurationSource(request -> {
-                    CorsConfiguration cfg = new CorsConfiguration();
-                    cfg.setAllowedOrigins(Collections.singletonList("*"));
-                    cfg.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-                    cfg.setAllowedHeaders(Arrays.asList("*"));
-                    return cfg;
-                }));;
+                .authenticated())
+//                .cors(cors -> cors
+//                .configurationSource(request -> {
+//                    CorsConfiguration cfg = new CorsConfiguration();
+//                    cfg.setAllowedOrigins(Collections.singletonList("*"));
+//                    cfg.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+//                    cfg.setAllowedHeaders(Arrays.asList("*"));
+//                    return cfg;
+//                }));
+        ;
 
         httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
                         .decoder(customJwtDecoder)

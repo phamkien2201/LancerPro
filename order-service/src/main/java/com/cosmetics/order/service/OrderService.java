@@ -51,7 +51,7 @@ public class OrderService {
         if (user == null || user.getResult() == null) {
             throw new RuntimeException("User not found for ID: " + request.getUserId());
         }
-        String warehouseAddress = "33 Đường Hiệp Thành 22, Hiệp Thành, Quận 12, Hồ Chí Minh, Việt Nam";
+        String warehouseAddress = "Hiệp Thành, 71500, Quận 12, Thành phố Hồ Chí Minh, Việt Nam";
         float shippingFee = calculateShippingFee(request.getAddress(), request.getTotalMoney());
 
        Order order = orderMapper.toOrder(request);

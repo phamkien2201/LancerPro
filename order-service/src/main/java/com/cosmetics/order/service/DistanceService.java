@@ -23,54 +23,40 @@ public class DistanceService {
         this.restTemplate = restTemplate;
     }
 
-//    public String convertAddressToCoordinates(String address) {
-//        try {
-//            String baseUrl = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
-//            String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
-//            String url = String.format(
-//                    "%s%s.json?access_token=%s",
-//                    baseUrl,
-//                    encodedAddress,
-//                    mapboxAccessToken
-//            );
-//
-//            MapboxGeocodingResponse response = restTemplate.getForObject(url, MapboxGeocodingResponse.class);
-//
-//            if (response != null && !response.getFeatures().isEmpty()) {
-//                List<Double> coordinates = response.getFeatures().get(0).getCenter();
-//                return coordinates.get(0) + "," + coordinates.get(1); // Dạng "longitude,latitude"
-//            }
-//
-//            throw new RuntimeException("Không thể chuyển đổi địa chỉ thành tọa độ.");
-//        } catch (Exception e) {
-//            log.error("Lỗi khi gọi Mapbox Geocoding API: ", e);
-//            throw new RuntimeException("Lỗi khi chuyển đổi địa chỉ thành tọa độ.");
-//        }
-//    }
+    public String getCoordinatesFromAddress(String address) {
+        try {
+            String baseUrl = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
+            String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
+            String url = String.format("%s%s.json?access_token=%s", baseUrl, encodedAddress, mapboxAccessToken);
 
+            MapboxGeocodingResponse response = restTemplate.getForObject(url, MapboxGeocodingResponse.class);
+
+            if (response != null && !response.getFeatures().isEmpty()) {
+                List<Double> coordinates = response.getFeatures().get(0).getCenter();
+                return coordinates.get(0) + "," + coordinates.get(1); // longitude,latitude
+            }
+            throw new RuntimeException("Không thể tìm thấy tọa độ.");
+        } catch (Exception e) {
+            log.error("Lỗi khi gọi Mapbox Geocoding API: ", e);
+            throw new RuntimeException("Lỗi khi lấy tọa độ từ địa chỉ.");
+        }
+    }
 
     public double calculateDistance(String origin, String destination) {
         try {
             String baseUrl = "https://api.mapbox.com/directions/v5/mapbox/driving/";
             String coordinates = origin + ";" + destination;
-            String url = String.format(
-                    "%s%s?geometries=geojson&access_token=%s",
-                    baseUrl,
-                    coordinates,
-                    mapboxAccessToken
-            );
+            String url = String.format("%s%s?geometries=geojson&access_token=%s", baseUrl, coordinates, mapboxAccessToken);
 
             MapboxResponse response = restTemplate.getForObject(url, MapboxResponse.class);
 
             if (response != null && !response.getRoutes().isEmpty()) {
                 return response.getRoutes().get(0).getDistance() / 1000.0; // Mét sang km
             }
-
             throw new RuntimeException("Không thể tính khoảng cách.");
         } catch (Exception e) {
             log.error("Lỗi khi gọi Mapbox API: ", e);
             throw new RuntimeException("Lỗi khi tính khoảng cách.");
         }
     }
-
 }

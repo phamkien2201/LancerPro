@@ -53,4 +53,13 @@ public class CartController {
     ) {
         cartService.removeProductFromCart(userId, cartItemId);
     }
+
+    @PatchMapping("/{userId}/items/{productId}/reduce")
+    public void reduceProductQuantity(
+            @PathVariable String userId,
+            @PathVariable String productId,
+            @RequestParam int quantityToReduce
+    ) {
+        cartService.reduceProductQuantity(userId, productId, quantityToReduce);
+    }
 }

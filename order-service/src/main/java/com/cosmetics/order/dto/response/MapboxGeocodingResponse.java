@@ -10,6 +10,7 @@ public class MapboxGeocodingResponse {
 
     @Data
     public static class Feature {
-        private List<Double> center; // Center chứa tọa độ [longitude, latitude]
+        private String place_name;
+        private List<Double> center; // [longitude, latitude]
     }
 }
