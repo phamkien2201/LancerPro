@@ -20,7 +20,7 @@ public class ProfileCreationRequest {
     String name;
     String gender;
     Integer age;
-    String occupation;
+    String phoneNumber;
 
     @DobConstraint(min = 10, message = "INVALID_DOB")
     LocalDate dob;
