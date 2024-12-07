@@ -22,7 +22,7 @@ public class UserResponse {
     String name;
     String gender;
     Integer age;
-    String occupation;
+    String phoneNumber;
 
     Set<RoleResponse> roles;
 }

@@ -1,12 +1,16 @@
 package com.cosmetics.order.configuration;
 
+import org.springframework.stereotype.Component;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+@Component
 public class VNPAYConfig {
 
     private static final String VN_PAY_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
@@ -15,7 +19,8 @@ public class VNPAYConfig {
     private static final String CURRENCY_CODE = "VND";
     private static final String LOCALE = "vn";
 
-    public static String createVNPayPaymentUrl(String txnRef, String orderInfo, float amount, String returnUrl) {
+    // Giữ nguyên các phương thức như cũ
+    public String createVNPayPaymentUrl(String txnRef, String orderInfo, float amount, String returnUrl) {
         try {
             Map<String, String> vnp_Params = new HashMap<>();
             vnp_Params.put("vnp_Version", "2.1.0");
@@ -26,6 +31,8 @@ public class VNPAYConfig {
             vnp_Params.put("vnp_OrderInfo", orderInfo);
             vnp_Params.put("vnp_Locale", LOCALE);
             vnp_Params.put("vnp_ReturnUrl", returnUrl);
+            vnp_Params.put("vnp_Command", "pay");
+            vnp_Params.put("vnp_CreateDate", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
 
             String vnp_SecureHash = generateSecureHash(vnp_Params, SECRET_KEY);
             vnp_Params.put("vnp_SecureHash", vnp_SecureHash);
@@ -54,12 +61,10 @@ public class VNPAYConfig {
             }
         }
 
-        // Loại bỏ dấu "&" cuối cùng
         if (hashData.length() > 0) {
             hashData.deleteCharAt(hashData.length() - 1);
         }
 
-        // Tạo chữ ký
         String data = hashData.toString();
         return HMAC_SHA512(secretKey, data);
     }
@@ -78,11 +83,9 @@ public class VNPAYConfig {
 
     private static String bytesToHex(byte[] bytes) {
         StringBuilder hexString = new StringBuilder();
-        for (int i = 0; i < bytes.length; i++) {
-            String hex = Integer.toHexString(0xff & bytes[i]);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
+        for (byte b : bytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append('0');
             hexString.append(hex);
         }
         return hexString.toString();

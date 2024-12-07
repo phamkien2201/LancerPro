@@ -65,6 +65,8 @@ public class CartService {
             existingItem.setQuantity(existingItem.getQuantity() + request.getQuantity());
         } else {
             CartItem newCartItem = CartItem.builder()
+                    .id(java.util.UUID.randomUUID().toString())
+                    .cartId(cart.getId())
                     .productId(request.getProductId())
                     .quantity(request.getQuantity())
                     .price(product.getPrice())

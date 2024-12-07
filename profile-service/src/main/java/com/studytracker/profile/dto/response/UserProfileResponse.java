@@ -18,6 +18,6 @@ public class UserProfileResponse {
     String name;
     String gender;
     Integer age;
-    String occupation;
+    String phoneNumber;
     LocalDate dob;
 }

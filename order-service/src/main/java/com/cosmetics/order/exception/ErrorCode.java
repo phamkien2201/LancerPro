@@ -11,6 +11,8 @@ public enum ErrorCode {
     UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     ORDER_NOT_EXISTED(1005, "Order not existed", HttpStatus.NOT_FOUND),
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
+    PAYMENT_FAILED(1008, "Payment transaction failed", HttpStatus.BAD_REQUEST),
+    INVALID_PAYMENT_METHOD(1009, "Invalid payment method", HttpStatus.BAD_REQUEST)
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

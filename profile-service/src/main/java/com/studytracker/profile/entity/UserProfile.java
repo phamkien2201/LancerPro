@@ -27,5 +27,5 @@ public class UserProfile {
     LocalDate dob;
     String gender;
     Integer age;
-    String occupation;
+    String phoneNumber;
 }

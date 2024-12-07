@@ -1,6 +1,10 @@
 package com.cosmetics.order.controller;
 
+import com.cosmetics.order.configuration.VNPAYConfig;
+import com.cosmetics.order.dto.response.OrderResponse;
+import com.cosmetics.order.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +19,10 @@ import static com.cosmetics.order.configuration.VNPAYConfig.generateSecureHash;
 
 @RestController
 @RequestMapping("/vnpay")
+@RequiredArgsConstructor
 public class VNPayController {
+    private final OrderService orderService;
+    private final VNPAYConfig vnpayConfig;
 
     @PostMapping("/return")
     public ResponseEntity<?> vnpayReturn(HttpServletRequest request) {
@@ -29,17 +36,23 @@ public class VNPayController {
 
         // Kiểm tra chữ ký và xác thực kết quả
         String secureHash = vnp_Params.get("vnp_SecureHash");
-        String secretKey = "EEEDX2BHCFNGW93R8W6EFKYSG8F59XKY";  // Thay thế với Secret Key
+        String secretKey = "EEEDX2BHCFNGW93R8W6EFKYSG8F59XKY";
         vnp_Params.remove("vnp_SecureHash");
 
-        String generatedHash = generateSecureHash(vnp_Params, secretKey);
+        String generatedHash = VNPAYConfig.generateSecureHash(vnp_Params, secretKey);
 
-        if (secureHash.equals(generatedHash)) {
-            // Thanh toán thành công
-            // Xử lý logic thanh toán thành công
-            return ResponseEntity.ok("Thanh toán thành công");
+        // Lấy orderId từ request
+        String orderId = vnp_Params.get("vnp_TxnRef");
+        String responseCode = vnp_Params.get("vnp_ResponseCode");
+
+        // Kiểm tra chữ ký và mã phản hồi
+        if (secureHash.equals(generatedHash) && "00".equals(responseCode)) {
+            // Xác nhận thanh toán thành công
+            OrderResponse orderResponse = orderService.confirmVNPayPayment(orderId, true);
+            return ResponseEntity.ok("Thanh toán thành công cho đơn hàng: " + orderId);
         } else {
             // Thanh toán thất bại
+            orderService.confirmVNPayPayment(orderId, false);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thanh toán thất bại");
         }
     }

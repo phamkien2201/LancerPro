@@ -43,21 +43,57 @@ public class OrderService {
     OrderDetailRepository orderDetailRepository;
     UserClient userClient;
     DistanceService distanceService;
-    private static final String DEFAULT_ADDRESS = "106.70000,10.77689";
+    VNPAYConfig vnpayConfig;
+
+    private static final String DEFAULT_ADDRESS = "Bến Nghé, Quận Nhất";
 
     public OrderResponse createOrder(OrderRequest request) {
-
-       ApiResponse<UserResponse> user = userClient.getUser(request.getUserId());
+        // Kiểm tra user
+        ApiResponse<UserResponse> user = userClient.getUser(request.getUserId());
         if (user == null || user.getResult() == null) {
-            throw new RuntimeException("User not found for ID: " + request.getUserId());
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        String warehouseAddress = "Hiệp Thành, 71500, Quận 12, Thành phố Hồ Chí Minh, Việt Nam";
+
+        // Tính phí vận chuyển
         float shippingFee = calculateShippingFee(request.getAddress(), request.getTotalMoney());
 
-       Order order = orderMapper.toOrder(request);
+        // Tạo order
+        Order order = orderMapper.toOrder(request);
         order.setFee(shippingFee);
-        order = orderRepository.save(order);
-        //
+
+        // Kiểm tra phương thức thanh toán
+        if (request.getPaymentMethod() == null) {
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+
+        // Xử lý từng phương thức thanh toán
+        switch (request.getPaymentMethod()) {
+            case "COD":
+                // Với COD, tạo order ngay lập tức
+                order.setStatus(OrderStatus.PENDING);
+                order = orderRepository.save(order);
+                break;
+
+            case "VNPAY":
+                String vnpUrl = vnpayConfig.createVNPayPaymentUrl(
+                        order.getId(),
+                        "Thanh toán đơn hàng #" + order.getId(),
+                        order.getTotalMoney(),
+                        "http://localhost:8084/orders/vnpay/return"
+                );
+
+                // Chưa lưu order để đảm bảo chỉ lưu khi thanh toán thành công
+
+                // Trả về response với URL thanh toán
+                OrderResponse paymentResponse = orderMapper.toOrderResponse(order);
+                paymentResponse.setPaymentUrl(vnpUrl);
+                return paymentResponse;
+
+            default:
+                throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+
+        // Xử lý chi tiết đơn hàng
         List<OrderDetail> orderDetails = new ArrayList<>();
         for (CartItemRequest cartItemRequest : request.getCartItemsIdRequest()) {
             OrderDetail orderDetail = new OrderDetail();
@@ -68,72 +104,69 @@ public class OrderService {
 
             ApiResponse<ProductResponse> productResponse = productClient.getProductById(productId);
             if (productResponse == null || productResponse.getResult() == null) {
-                throw new RuntimeException("Product not found for ID: " + productId);
-            };
+                throw new AppException(ErrorCode.ORDER_NOT_EXISTED);
+            }
+
             ProductResponse product = productResponse.getResult();
             Float currentQuantity = product.getQuantity();
 
-            // Kiểm tra số lượng có đủ hay không
+            // Kiểm tra số lượng sản phẩm
             if (currentQuantity < requestedQuantity) {
                 throw new RuntimeException("Insufficient quantity for product ID: " + productId);
             }
 
+            // Cập nhật số lượng sản phẩm
             Float newQuantity = currentQuantity - requestedQuantity;
             productClient.updateProductQuantity(productId, newQuantity);
+
             orderDetail.setProductId(productId);
             orderDetail.setQuantity(requestedQuantity);
             orderDetail.setPrice(product.getPrice());
             orderDetails.add(orderDetail);
         }
+
         orderDetailRepository.saveAll(orderDetails);
 
-        String vnpUrl = VNPAYConfig.createVNPayPaymentUrl(
-                order.getId(),
-                "Thanh toán đơn hàng #" + order.getId(),
-                order.getTotalMoney(),
-                "http://localhost:8084/orders/vnpay/return"
-        );
-
+        // Trả về response cho phương thức COD
         OrderResponse response = orderMapper.toOrderResponse(order);
-        response.setPaymentUrl(vnpUrl); // Gán URL thanh toán
         return response;
     }
 
-//    public float calculateShippingFee(String originAddress, String destinationAddress, float totalMoney) {
-//        // Chuyển đổi địa chỉ thành tọa độ
-//        String originCoordinates = distanceService.convertAddressToCoordinates(originAddress);
-//        String destinationCoordinates = distanceService.convertAddressToCoordinates(destinationAddress);
-//
-//        // Tính khoảng cách
-//        double distance = distanceService.calculateDistance(originCoordinates, destinationCoordinates);
-//
-//        // Tính phí giao hàng
-//        if (totalMoney > 300 || distance < 2) {
-//            return 0; // Miễn phí giao hàng
-//        } else if (distance < 5) {
-//            return 20; // Phí giao hàng 20
-//        } else if (distance < 10) {
-//            return 50; // Phí giao hàng 50
-//        } else {
-//            return 100; // Phí giao hàng 100
-//        }
-//    }
-    public float calculateShippingFee(String address, Float totalMoney) {
-        double distance = distanceService.calculateDistance(DEFAULT_ADDRESS, address);
+    // Phương thức xác nhận thanh toán VNPAY
+    public OrderResponse confirmVNPayPayment(String orderId, boolean paymentStatus) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
-        if (totalMoney != null && totalMoney > 300000) {
-            return 0;
-        }
-        if (distance < 2) {
-            return 0;
-        } else if (distance < 5) {
-            return 20000;
-        } else if (distance < 10) {
-            return 50000;
+        if (paymentStatus) {
+            // Thanh toán thành công
+            order.setStatus(OrderStatus.PENDING);
+            orderRepository.save(order);
+            return orderMapper.toOrderResponse(order);
         } else {
-            return 100000;
+            // Thanh toán thất bại
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
-}
+
+    public float calculateShippingFee(String address, Float totalMoney) {
+        try {
+            if (totalMoney != null && totalMoney > 300000) {
+                return 0;
+            }
+            double distance = distanceService.calculateDistance(DEFAULT_ADDRESS, address);
+            if (distance < 2) {
+                return 0;
+            } else if (distance < 5) {
+                return 20000;
+            } else if (distance < 10) {
+                return 50000;
+            } else {
+                return 100000;
+            }
+        } catch (Exception e) {
+            return 50000;
+        }
+    }
 
     public OrderResponse getOrder(String id) {
         return orderMapper.toOrderResponse(

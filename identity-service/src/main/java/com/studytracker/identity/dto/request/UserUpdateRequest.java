@@ -20,7 +20,7 @@ public class UserUpdateRequest {
     String name;
     String gender;
     Integer age;
-    String occupation;
+    String phoneNumber;
 
     LocalDate dob;
 

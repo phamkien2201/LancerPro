@@ -29,23 +29,12 @@ public class OrderController {
                 .result(orderService.createOrder(request))
                 .build();
     }
-//    @GetMapping("/calculate-fee")
-//    public ApiResponse<Float> calculateShippingFee(
-//            @RequestParam String destinationAddress,
-//            @RequestParam float totalMoney) {
-//        String warehouseAddress = "33 Đường Hiệp Thành 22, Hiệp Thành, Quận 12, Hồ Chí Minh, Việt Nam";
-//        float shippingFee = orderService.calculateShippingFee(warehouseAddress, destinationAddress, totalMoney);
-//        return ApiResponse.<Float>builder()
-//                .code(1000)
-//                .result(shippingFee)
-//                .build();
-//    }
 
-    // API tính phí giao hàng
     @GetMapping("/shipping-fee")
     public ApiResponse<Float> calculateShippingFee(
-            @RequestParam String address,
-            @RequestParam Float totalMoney) {
+            @RequestParam(value = "address", required = true) String address,
+            @RequestParam(value = "totalMoney", required = true) Float totalMoney
+    ) {
         float shippingFee = orderService.calculateShippingFee(address, totalMoney);
         return ApiResponse.<Float>builder()
                 .result(shippingFee)
