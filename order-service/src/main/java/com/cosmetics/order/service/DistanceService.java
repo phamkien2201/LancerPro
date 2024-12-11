@@ -11,9 +11,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -28,30 +26,21 @@ public class DistanceService {
     }
 
     private String shortenAddress(String address) {
-        // Tách địa chỉ thành các phần
         String[] parts = address.split(",");
-
-        // Nếu địa chỉ có nhiều hơn 2 phần, lấy 2 phần cuối
-        if (parts.length > 2) {
+        if (parts.length > 3) {
             return parts[parts.length - 2].trim() + ", " + parts[parts.length - 1].trim();
         }
-
-        // Nếu địa chỉ ngắn hơn, trả về nguyên địa chỉ
         return address;
     }
 
     public String getCoordinatesFromAddress(String address) {
         try {
-            // Rút ngắn địa chỉ
             String shortenedAddress = shortenAddress(address);
-
-            // Mã hóa địa chỉ
             String encodedAddress = URLEncoder.encode(shortenedAddress, StandardCharsets.UTF_8.toString());
 
-            // Xây dựng URL
             URI url = UriComponentsBuilder.fromHttpUrl("https://api.mapbox.com/geocoding/v5/mapbox.places/" + encodedAddress + ".json")
                     .queryParam("access_token", mapboxAccessToken)
-                    .queryParam("limit", 1)  // Giới hạn kết quả trả về
+                    .queryParam("limit", 1)
                     .build().toUri();
 
             log.info("Calling Mapbox Geocoding API with shortened address: {}", shortenedAddress);
@@ -100,7 +89,7 @@ public class DistanceService {
             throw new RuntimeException("Không thể tính khoảng cách.");
         } catch (Exception e) {
             log.error("Error calling Mapbox Directions API: ", e);
-            throw new RuntimeException("Lỗi khi tính khoảng cách.");
+            return 4.0;
         }
     }
 }

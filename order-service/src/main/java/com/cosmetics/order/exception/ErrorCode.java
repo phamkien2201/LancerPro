@@ -12,6 +12,7 @@ public enum ErrorCode {
     ORDER_NOT_EXISTED(1005, "Order not existed", HttpStatus.NOT_FOUND),
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
     PAYMENT_FAILED(1008, "Payment transaction failed", HttpStatus.BAD_REQUEST),
+    ORDER_FAILED(1018, "Order failed", HttpStatus.FAILED_DEPENDENCY),
     INVALID_PAYMENT_METHOD(1009, "Invalid payment method", HttpStatus.BAD_REQUEST)
     ;
 

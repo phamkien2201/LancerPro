@@ -22,6 +22,7 @@ import com.cosmetics.order.dto.response.ProductResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,19 +34,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderService {
     OrderRepository orderRepository;
     OrderMapper orderMapper;
-    OrderDetailMapper orderDetailMapper;
     ProductClient productClient;
     OrderDetailRepository orderDetailRepository;
     UserClient userClient;
     DistanceService distanceService;
     VNPAYConfig vnpayConfig;
 
-    private static final String DEFAULT_ADDRESS = "Bến Nghé, Quận Nhất";
+    private static final String DEFAULT_ADDRESS = "106.6461,10.8614";
 
     public OrderResponse createOrder(OrderRequest request) {
         // Kiểm tra user
@@ -144,27 +145,38 @@ public class OrderService {
             return orderMapper.toOrderResponse(order);
         } else {
             // Thanh toán thất bại
-            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+            throw new AppException(ErrorCode.ORDER_FAILED);
         }
     }
 
     public float calculateShippingFee(String address, Float totalMoney) {
         try {
             if (totalMoney != null && totalMoney > 300000) {
+                log.info("Free shipping applied for total money: {}", totalMoney);
                 return 0;
             }
-            double distance = distanceService.calculateDistance(DEFAULT_ADDRESS, address);
+
+            log.info("Calculating shipping fee for address: {}", address);
+            String destinationCoordinates = distanceService.getCoordinatesFromAddress(address);
+            double distance = distanceService.calculateDistance(DEFAULT_ADDRESS, destinationCoordinates);
+            log.info("Distance calculated: {} km", distance);
+
             if (distance < 2) {
+                log.info("Shipping fee: 0 (distance < 2 km)");
                 return 0;
             } else if (distance < 5) {
+                log.info("Shipping fee: 20,000 (distance < 5 km)");
                 return 20000;
             } else if (distance < 10) {
-                return 50000;
+                log.info("Shipping fee: 45,000 (distance < 10 km)");
+                return 45000;
             } else {
-                return 100000;
+                log.info("Shipping fee: 70,000 (distance >= 10 km)");
+                return 70000;
             }
-        } catch (Exception e) {
-            return 50000;
+        } catch (RuntimeException e) {
+            log.error("Error calculating shipping fee: {}", e.getMessage());
+            return 19999;
         }
     }
 
