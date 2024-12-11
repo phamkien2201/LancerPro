@@ -41,8 +41,11 @@ public class CartService {
                     .build();
             cartRepository.save(cart);
         }
-        // Map sang CartResponse
-        return cartMapper.toCartResponse(cart);
+
+        int totalItems = cart.getCartItemIds().size();
+        CartResponse response = cartMapper.toCartResponse(cart);
+        response.setTotal(totalItems);
+        return response;
     }
 
     public CartResponse addProductToCart(String userId, CartItemRequest request) {

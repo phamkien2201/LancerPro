@@ -1,6 +1,5 @@
 package com.studytracker.profile.repository;
 
-import com.studytracker.profile.dto.response.UserProfileResponse;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
