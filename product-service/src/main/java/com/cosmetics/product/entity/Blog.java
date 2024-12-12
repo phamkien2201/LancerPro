@@ -19,7 +19,7 @@ public class Blog {
     @Id
     String id;
     String title;
-    String description;
+    List<String> description;
     List<String> thumbnails;
 
 }
