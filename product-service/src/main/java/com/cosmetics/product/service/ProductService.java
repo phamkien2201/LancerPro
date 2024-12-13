@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -73,37 +74,30 @@ public class ProductService {
     }
 
 
-    public ProductListResponse findProductsByCategoryId(String categoryId, int page, int limit) {
-        // Tìm danh mục dựa trên categoryId
+    public ProductListResponse findProductsByCategoryId(String categoryId, int page, int limit, String sortBy, String sortDirection) {
         Optional<Category> categoryOptional = categoryRepository.findById(categoryId);
         if (categoryOptional.isEmpty()) {
             throw new IllegalArgumentException("No category found with id: " + categoryId);
         }
 
-        Category category = categoryOptional.get();
-
-        // Kiểm tra nếu danh mục có danh mục con
         List<Category> subCategories = categoryRepository.findByParentId(categoryId);
         Page<Product> products;
-
-        Pageable pageable = PageRequest.of(page, limit);
+        Sort.Direction direction = "asc".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, limit, Sort.by(direction, sortBy));
 
         if (subCategories.isEmpty()) {
-            // Nếu không có danh mục con, tức là danh mục con, tìm sản phẩm trong danh mục hiện tại
             products = productRepository.findByCategoryId(categoryId, pageable);
         } else {
-            // Nếu là danh mục lớn, tìm sản phẩm trong tất cả các danh mục con
             List<String> categoryIds = findAllSubCategoryIds(categoryId);
             products = productRepository.findByCategoryIdIn(categoryIds, pageable);
         }
 
-        // Lấy danh sách sản phẩm từ products
         List<ProductResponse> productResponses = products.map(productMapper::toProductResponse).getContent();
         int totalPages = products.getTotalPages();
 
         return ProductListResponse.builder()
-                .products(productResponses) // danh sách sản phẩm
-                .totalPages(totalPages) // tổng số trang
+                .products(productResponses)
+                .totalPages(totalPages)
                 .build();
     }
 
@@ -118,15 +112,13 @@ public class ProductService {
         return categoryIds;
     }
 
-    public ProductListResponse findProductsByBrandId(String brandId, int page, int limit) {
-        // Kiểm tra nếu tồn tại brand với brandId
+    public ProductListResponse findProductsByBrandId(String brandId, int page, int limit, String sortBy, String sortDirection) {
         brandRepository.findById(brandId).orElseThrow(() ->
                 new IllegalArgumentException("Cannot find brand with id: " + brandId)
         );
-
-        // Phân trang
-        PageRequest pageRequest = PageRequest.of(page, limit);
-        Page<Product> products = productRepository.findByBrandId(brandId, pageRequest);
+        Sort.Direction direction = "asc".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, limit, Sort.by(direction, sortBy));
+        Page<Product> products = productRepository.findByBrandId(brandId, pageable);
 
         List<ProductResponse> productResponses = products.map(productMapper::toProductResponse).getContent();
         int totalPages = products.getTotalPages();

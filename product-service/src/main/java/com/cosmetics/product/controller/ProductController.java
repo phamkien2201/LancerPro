@@ -40,7 +40,9 @@ public class ProductController {
     @Operation(summary = "Lấy danh sách sản phẩm")
     public ApiResponse<ProductListResponse> getProducts(
             @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "limit",required = false) Integer limit
+            @RequestParam(value = "limit",required = false) Integer limit,
+            @RequestParam(value = "sortBy", required = false, defaultValue = "createdAt") String sortBy,
+            @RequestParam(value = "sortDirection", required = false, defaultValue = "desc") String sortDirection
     ) {
         if (page == null) {
             page = 0;
@@ -48,10 +50,10 @@ public class ProductController {
         if (limit == null) {
             limit = 20;
         }
+        Sort.Direction direction = "asc".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
         PageRequest pageRequest = PageRequest.of(
                 page, limit,
-                Sort.by("createdAt").descending()
-        );
+                Sort.by(direction, sortBy));
         Page<ProductResponse> productPage = productService.getAllProducts(pageRequest);
         int totalPages = productPage.getTotalPages();
         List<ProductResponse> products = productPage.getContent();
@@ -93,7 +95,9 @@ public class ProductController {
     public ApiResponse<ProductListResponse> findProductsByCategoryId(
             @PathVariable String categoryId,
             @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "limit",required = false) Integer limit
+            @RequestParam(value = "limit",required = false) Integer limit,
+            @RequestParam(value = "sortBy", required = false, defaultValue = "createdAt") String sortBy,
+            @RequestParam(value = "sortDirection", required = false, defaultValue = "desc") String sortDirection
     ) {
         if (page == null) {
             page = 0;
@@ -102,7 +106,7 @@ public class ProductController {
             limit = 20;
         }
 
-        ProductListResponse productListResponse = productService.findProductsByCategoryId(categoryId, page, limit);
+        ProductListResponse productListResponse = productService.findProductsByCategoryId(categoryId, page, limit, sortBy, sortDirection);
         return ApiResponse.<ProductListResponse>builder()
                 .result(productListResponse)
                 .build();
@@ -113,7 +117,9 @@ public class ProductController {
     public ApiResponse<ProductListResponse> findProductsByBrandId(
             @PathVariable String brandId,
             @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "limit", required = false) Integer limit
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestParam(value = "sortBy", required = false, defaultValue = "createdAt") String sortBy,
+            @RequestParam(value = "sortDirection", required = false, defaultValue = "desc") String sortDirection
     ) {
         if (page == null) {
             page = 0;
@@ -121,8 +127,7 @@ public class ProductController {
         if (limit == null) {
             limit = 20;
         }
-
-        ProductListResponse productListResponse = productService.findProductsByBrandId(brandId, page, limit);
+        ProductListResponse productListResponse = productService.findProductsByBrandId(brandId, page, limit, sortBy, sortDirection);
         return ApiResponse.<ProductListResponse>builder()
                 .result(productListResponse)
                 .build();
