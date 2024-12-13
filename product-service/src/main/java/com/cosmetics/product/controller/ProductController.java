@@ -38,7 +38,7 @@ public class ProductController {
 
     @GetMapping("/get-all-products")
     @Operation(summary = "Lấy danh sách sản phẩm")
-    public ResponseEntity<ProductListResponse> getProducts(
+    public ApiResponse<ProductListResponse> getProducts(
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "limit",required = false) Integer limit
     ) {
@@ -55,10 +55,12 @@ public class ProductController {
         Page<ProductResponse> productPage = productService.getAllProducts(pageRequest);
         int totalPages = productPage.getTotalPages();
         List<ProductResponse> products = productPage.getContent();
-        return ResponseEntity.ok(ProductListResponse.builder()
-                .products(products)
-                .totalPages(totalPages)
-                .build());
+        return ApiResponse.<ProductListResponse>builder()
+                .result(ProductListResponse.builder()
+                        .products(products)
+                        .totalPages(totalPages)
+                        .build())
+                .build();
     }
 
     @GetMapping("/{productId}")
@@ -88,7 +90,7 @@ public class ProductController {
 
     @GetMapping("/category/{categoryId}")
     @Operation(summary = "Lấy danh sách sản phẩm theo danh mục")
-    public ResponseEntity<ProductListResponse> findProductsByCategoryId(
+    public ApiResponse<ProductListResponse> findProductsByCategoryId(
             @PathVariable String categoryId,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "limit",required = false) Integer limit
@@ -101,12 +103,14 @@ public class ProductController {
         }
 
         ProductListResponse productListResponse = productService.findProductsByCategoryId(categoryId, page, limit);
-        return ResponseEntity.ok(productListResponse);
+        return ApiResponse.<ProductListResponse>builder()
+                .result(productListResponse)
+                .build();
     }
 
     @GetMapping("/brand/{brandId}")
     @Operation(summary = "Lấy danh sách sản phẩm theo thương hiệu")
-    public ResponseEntity<ProductListResponse> findProductsByBrandId(
+    public ApiResponse<ProductListResponse> findProductsByBrandId(
             @PathVariable String brandId,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "limit", required = false) Integer limit
@@ -119,14 +123,16 @@ public class ProductController {
         }
 
         ProductListResponse productListResponse = productService.findProductsByBrandId(brandId, page, limit);
-        return ResponseEntity.ok(productListResponse);
+        return ApiResponse.<ProductListResponse>builder()
+                .result(productListResponse)
+                .build();
     }
 
     @PutMapping("/{id}/quantity")
-    public ResponseEntity<Void> updateProductQuantity(
+    public ApiResponse<Void> updateProductQuantity(
             @PathVariable("id") String productId,
             @RequestParam("newQuantity") Float newQuantity) {
         productService.updateProductQuantity(productId, newQuantity);
-        return ResponseEntity.noContent().build();
+        return  ApiResponse.<Void>builder().build();
     }
 }
