@@ -86,8 +86,8 @@ public class ProductController {
     @DeleteMapping("/delete-product/{productId}")
     @Operation(summary = "Xóa sản phẩm")
     public void deleteProductById(
-            @PathVariable String id) {
-        productService.deleteProduct(id);
+            @PathVariable String productId) {
+        productService.deleteProduct(productId);
     }
 
     @GetMapping("/category/{categoryId}")
