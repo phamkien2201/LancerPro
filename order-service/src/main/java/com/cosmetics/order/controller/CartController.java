@@ -55,11 +55,13 @@ public class CartController {
     }
 
     @PatchMapping("/{userId}/items/{productId}/reduce")
-    public void reduceProductQuantity(
+    public ApiResponse<CartResponse> reduceProductQuantity(
             @PathVariable String userId,
             @PathVariable String productId,
             @RequestParam int quantityToReduce
     ) {
-        cartService.reduceProductQuantity(userId, productId, quantityToReduce);
+        return ApiResponse.<CartResponse>builder()
+                .result(cartService.reduceProductQuantity(userId, productId,quantityToReduce))
+                .build();
     }
 }

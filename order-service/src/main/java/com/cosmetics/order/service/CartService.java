@@ -81,7 +81,7 @@ public class CartService {
         return cartMapper.toCartResponse(cart);
     }
 
-    public void reduceProductQuantity(String userId, String productId, int quantityToReduce) {
+    public CartResponse reduceProductQuantity(String userId, String productId, int quantityToReduce) {
         Cart cart = cartRepository.findByUserId(userId);
         if (cart == null) {
             throw new IllegalArgumentException("Cart not found for userId: " + userId);
@@ -107,6 +107,7 @@ public class CartService {
         }
 
         cartRepository.save(cart);
+        return cartMapper.toCartResponse(cart);
     }
 
 
