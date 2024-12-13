@@ -77,9 +77,9 @@ public class ProductController {
 
     @PutMapping("/update-product/{productId}")
     @Operation(summary = "Update sản phẩm bằng id")
-    ApiResponse<ProductResponse> updateProduct(@PathVariable String id, @RequestBody ProductRequest request) {
+    ApiResponse<ProductResponse> updateProduct(@PathVariable String productId, @RequestBody ProductRequest request) {
         return ApiResponse.<ProductResponse>builder()
-                .result(productService.updateProduct(id, request))
+                .result(productService.updateProduct(productId, request))
                 .build();
     }
 
