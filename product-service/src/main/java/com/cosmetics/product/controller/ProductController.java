@@ -96,14 +96,20 @@ public class ProductController {
             @PathVariable String categoryId,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "limit",required = false) Integer limit,
-            @RequestParam(value = "sortBy", required = false, defaultValue = "createdAt") String sortBy,
-            @RequestParam(value = "sortDirection", required = false, defaultValue = "desc") String sortDirection
+            @RequestParam(value = "sortBy", required = false) String sortBy,
+            @RequestParam(value = "sortDirection", required = false) String sortDirection
     ) {
         if (page == null) {
             page = 0;
         }
         if (limit == null) {
             limit = 20;
+        }
+        if (sortBy == null) {
+            sortBy = "createdAt";
+        }
+        if (sortDirection == null) {
+            sortDirection = "desc";
         }
 
         ProductListResponse productListResponse = productService.findProductsByCategoryId(categoryId, page, limit, sortBy, sortDirection);
@@ -118,14 +124,20 @@ public class ProductController {
             @PathVariable String brandId,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "limit", required = false) Integer limit,
-            @RequestParam(value = "sortBy", required = false, defaultValue = "createdAt") String sortBy,
-            @RequestParam(value = "sortDirection", required = false, defaultValue = "desc") String sortDirection
+            @RequestParam(value = "sortBy", required = false) String sortBy,
+            @RequestParam(value = "sortDirection", required = false) String sortDirection
     ) {
         if (page == null) {
             page = 0;
         }
         if (limit == null) {
             limit = 20;
+        }
+        if (sortBy == null) {
+            sortBy = "createdAt";
+        }
+        if (sortDirection == null) {
+            sortDirection = "desc";
         }
         ProductListResponse productListResponse = productService.findProductsByBrandId(brandId, page, limit, sortBy, sortDirection);
         return ApiResponse.<ProductListResponse>builder()
