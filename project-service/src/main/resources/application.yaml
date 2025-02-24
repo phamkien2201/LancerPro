@@ -1,0 +1,18 @@
+server:
+  port: 8083
+  servlet:
+    context-path: /projects
+spring:
+  application:
+    name: project-service
+  data:
+    mongodb:
+      uri: mongodb://root:root@localhost:27017/project-service?authSource=admin
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+app:
+  services:
+    identity: http://localhost:8080/identity
