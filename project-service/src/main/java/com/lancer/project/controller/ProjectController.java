@@ -2,6 +2,7 @@ package com.lancer.project.controller;
 
 import com.lancer.project.dto.ApiResponse;
 import com.lancer.project.dto.request.ProjectRequest;
+import com.lancer.project.dto.response.ProjectListResponse;
 import com.lancer.project.dto.response.ProjectResponse;
 import com.lancer.project.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,7 +38,7 @@ public class ProjectController {
 
     @GetMapping("/get-all")
     @Operation(summary = "Lấy danh sách dự án")
-    public ApiResponse<Page<ProjectResponse>> getAllProjects(
+    public ApiResponse<ProjectListResponse> getAllProjects(
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "limit", required = false) Integer limit,
             @RequestParam(value = "sortBy", required = false) String sortBy,
@@ -58,8 +59,68 @@ public class ProjectController {
 
         Sort.Direction direction = "asc".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
         PageRequest pageRequest = PageRequest.of(page, limit, Sort.by(direction, sortBy));
-        return ApiResponse.<Page<ProjectResponse>>builder()
-                .result(projectService.getAllProjects(pageRequest))
+        Page<ProjectResponse> projectResponses = projectService.getAllProjects(pageRequest);
+        int totalPages = projectResponses.getTotalPages();
+        List<ProjectResponse> projects = projectResponses.getContent();
+        return ApiResponse.<ProjectListResponse>builder()
+                .result(ProjectListResponse.builder()
+                        .projects(projects)
+                        .totalPages(totalPages)
+                        .build())
+                .build();
+    }
+
+    @GetMapping("/category/{categoryId}")
+    @Operation(summary = "Lấy danh sách project theo danh mục")
+    public ApiResponse<ProjectListResponse> findProjectsByCategoryId(
+            @PathVariable String categoryId,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "limit",required = false) Integer limit,
+            @RequestParam(value = "sortBy", required = false) String sortBy,
+            @RequestParam(value = "sortDirection", required = false) String sortDirection
+    ) {
+        if (page == null) {
+            page = 0;
+        }
+        if (limit == null) {
+            limit = 20;
+        }
+        if (sortBy == null) {
+            sortBy = "createdAt";
+        }
+        if (sortDirection == null) {
+            sortDirection = "desc";
+        }
+
+        ProjectListResponse projectListResponse = projectService.findProjectsByCategoryId(categoryId, page, limit, sortBy, sortDirection);
+        return ApiResponse.<ProjectListResponse>builder()
+                .result(projectListResponse)
+                .build();
+    }
+
+
+    @GetMapping("/client/{clientId}")
+    @Operation(summary = "Lấy danh sách dự án theo clientId")
+    public ApiResponse<ProjectListResponse> getProjectsByClientId(
+            @PathVariable String clientId,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "limit", required = false) Integer limit
+    ) {
+        if (page == null) {
+            page = 0;
+        }
+        if (limit == null) {
+            limit = 20;
+        }
+        PageRequest pageRequest = PageRequest.of(page, limit);
+        Page<ProjectResponse> projectResponses = projectService.getProjectsByClientId(clientId, pageRequest);
+        int totalPages = projectResponses.getTotalPages();
+        List<ProjectResponse> projects = projectResponses.getContent();
+        return ApiResponse.<ProjectListResponse>builder()
+                .result(ProjectListResponse.builder()
+                        .projects(projects)
+                        .totalPages(totalPages)
+                        .build())
                 .build();
     }
 
@@ -71,54 +132,6 @@ public class ProjectController {
                 .build();
     }
 
-    @GetMapping("/category")
-    @Operation(summary = "Lấy danh sách dự án theo category")
-    public ApiResponse<Page<ProjectResponse>> getProjectsByCategory(
-            @RequestParam(value = "category") String category,
-            @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "limit", required = false) Integer limit,
-            @RequestParam(value = "sortBy", required = false) String sortBy,
-            @RequestParam(value = "sortDirection", required = false) String sortDirection
-    ) {
-        if (page == null) {
-            page = 0;
-        }
-        if (limit == null) {
-            limit = 20;
-        }
-        if (sortBy == null) {
-            sortBy = "createdAt";
-        }
-        if (sortDirection == null) {
-            sortDirection = "desc";
-        }
-
-        Sort.Direction direction = "asc".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
-        PageRequest pageRequest = PageRequest.of(page, limit, Sort.by(direction, sortBy));
-        return ApiResponse.<Page<ProjectResponse>>builder()
-                .result(projectService.getProjectsByCategory(category, pageRequest))
-                .build();
-    }
-
-
-    @GetMapping("/client/{clientId}")
-    @Operation(summary = "Lấy danh sách dự án theo clientId")
-    public ApiResponse<Page<ProjectResponse>> getProjectsByClientId(
-            @RequestParam(value = "clientId") String clientId,
-            @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "limit", required = false) Integer limit
-    ) {
-        if (page == null) {
-            page = 0;
-        }
-        if (limit == null) {
-            limit = 20;
-        }
-        PageRequest pageRequest = PageRequest.of(page, limit);
-        return ApiResponse.<Page<ProjectResponse>>builder()
-                .result(projectService.getProjectsByCategory(clientId, pageRequest))
-                .build();
-    }
 
     @PutMapping("/update/{projectId}")
     @Operation(summary = "Cập nhật dự án")
@@ -129,6 +142,15 @@ public class ProjectController {
         return ApiResponse.<ProjectResponse>builder()
                 .result(projectService.updateProject(projectId, request))
                 .build();
+    }
+
+    @PutMapping("/{project}/status")
+    @Operation(summary = "Cập nhật trạng thái dự án")
+    public ApiResponse<Void> updateProjectStatus(
+            @PathVariable String projectId,
+            @RequestParam("status") String status) {
+        projectService.updateProjectStatus(projectId, status);
+        return ApiResponse.<Void>builder().build();
     }
 
     @DeleteMapping("/delete/{projectId}")

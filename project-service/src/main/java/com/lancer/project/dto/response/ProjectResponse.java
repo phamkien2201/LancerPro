@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -26,6 +25,7 @@ public class ProjectResponse {
     BigDecimal budgetMax;
     List<String> skills;
     String address;
+    String email;
     String paymentMethod;
     String workPattern;
     String clientId;

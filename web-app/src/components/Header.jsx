@@ -170,11 +170,10 @@ export default function Header() {
         <Box
           component={"img"}
           style={{
-            width: "35px",
+            width: "144px",
             height: "35px",
-            borderRadius: 6,
           }}
-          src="/logo/devteria-logo.png"
+          src="\images\lancepro-logo.png"
         ></Box>
       </IconButton>
       <Search>

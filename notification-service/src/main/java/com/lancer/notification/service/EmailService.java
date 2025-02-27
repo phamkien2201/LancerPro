@@ -32,7 +32,7 @@ public class EmailService {
     public EmailResponse sendEmail(SendEmailRequest request) {
         EmailRequest emailRequest = EmailRequest.builder()
                 .sender(Sender.builder()
-                        .name("Study Tracker")
+                        .name("lancerPro")
                         .email("2151120036@ut.edu.vn")
                         .build())
                 .to(List.of(request.getTo()))

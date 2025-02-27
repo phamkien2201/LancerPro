@@ -1,7 +1,6 @@
 package com.lancer.project.repository;
 
 import com.lancer.project.entity.Bid;
-import com.lancer.project.entity.Project;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.repository.MongoRepository;

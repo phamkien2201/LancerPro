@@ -4,6 +4,7 @@ import { Box, Card, CircularProgress, Typography } from "@mui/material";
 import { getMyInfo } from "../services/userService";
 import { isAuthenticated } from "../services/authenticationService";
 import Scene from "./Scene";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -49,114 +50,31 @@ export default function Home() {
               gap: "10px",
             }}
           >
-            <Typography
-              sx={{
-                fontSize: 18,
-                mb: "40px",
-              }}
-            >
+            <Typography sx={{ fontSize: 18, mb: "40px" }}>
               Welcome back to Devteria, {userDetails.username} !
             </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                width: "100%", // Ensure content takes full width
-              }}
-            >
-              <Typography
+            {[
+              { label: "User Id", value: userDetails.id },
+              { label: "First Name", value: userDetails.firstName },
+              { label: "Last Name", value: userDetails.lastName },
+              { label: "Date of birth", value: userDetails.dob },
+            ].map((item) => (
+              <Box
+                key={item.label}
                 sx={{
-                  fontSize: 14,
-                  fontWeight: 600,
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  width: "100%",
                 }}
               >
-                User Id
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: 14,
-                }}
-              >
-                {userDetails.id}
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                width: "100%", // Ensure content takes full width
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  fontWeight: 600,
-                }}
-              >
-                First Name
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: 14,
-                }}
-              >
-                {userDetails.firstName}
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                width: "100%", // Ensure content takes full width
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  fontWeight: 600,
-                }}
-              >
-                Last Name
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: 14,
-                }}
-              >
-                {userDetails.lastName}
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                width: "100%", // Ensure content takes full width
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  fontWeight: 600,
-                }}
-              >
-                Date of birth
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: 14,
-                }}
-              >
-                {userDetails.dob}
-              </Typography>
-            </Box>
+                <Typography sx={{ fontSize: 14, fontWeight: 600 }}>
+                  {item.label}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }}>{item.value}</Typography>
+              </Box>
+            ))}
           </Box>
         </Card>
       ) : (
@@ -174,6 +92,9 @@ export default function Home() {
           <Typography>Loading ...</Typography>
         </Box>
       )}
+      <Link to="/chat">
+        <button>Go to Chat</button>
+      </Link>
     </Scene>
   );
 }

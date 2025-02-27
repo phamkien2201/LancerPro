@@ -20,10 +20,10 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: com.studytracker.event.dto
-        spring.json.type.mapping: notification:com.studytracker.event.dto.NotificationEvent
+        spring.json.trusted.packages: com.lancer.event.dto
+        spring.json.type.mapping: notification:com.lancer.event.dto.NotificationEvent
 
 notification:
   email:
     brevo-url: https://api.brevo.com
-    brevo-apikey: "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"
+    brevo-apikey: "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"

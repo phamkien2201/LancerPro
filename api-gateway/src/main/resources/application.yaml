@@ -29,16 +29,16 @@ spring:
             - Path=${app.api-prefix}/notification/**
           filters:
             - StripPrefix=2
-        - id: products-service
+        - id: projects-service
           uri: http://localhost:8083
           predicates:
-            - Path=${app.api-prefix}/products/**
+            - Path=${app.api-prefix}/projects/**
           filters:
             - StripPrefix=2
-        - id: order-service
+        - id: chat-service
           uri: http://localhost:8084
           predicates:
-            - Path=${app.api-prefix}/orders/**
+            - Path=${app.api-prefix}/chat/**
           filters:
             - StripPrefix=2
 

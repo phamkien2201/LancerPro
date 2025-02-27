@@ -38,6 +38,8 @@ public class Project extends BaseEntity{
 
     String address;
 
+    String email;
+
     @Field("payment_method")
     String paymentMethod;
 

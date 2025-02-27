@@ -69,8 +69,8 @@ public class UserService {
         NotificationEvent notificationEvent = NotificationEvent.builder()
                 .channel("EMAIL")
                 .recipient(request.getEmail())
-                .subject("welcome :")
-                .body("hello: ")
+                .subject("welcome to lancerPro: ")
+                .body("Register successful")
                 .build();
 
         // Public message to kafka
@@ -150,6 +150,5 @@ public class UserService {
 
         kafkaTemplate.send("user-status-changed", notificationEvent);
     }
-
 
 }

@@ -1,11 +1,8 @@
 package com.lancer.project.mapper;
 
 import com.lancer.project.dto.request.BidRequest;
-import com.lancer.project.dto.request.ProjectRequest;
 import com.lancer.project.dto.response.BidResponse;
-import com.lancer.project.dto.response.ProjectResponse;
 import com.lancer.project.entity.Bid;
-import com.lancer.project.entity.Project;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

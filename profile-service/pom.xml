@@ -8,7 +8,7 @@
 		<version>3.2.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.studytracker</groupId>
+	<groupId>com.lancer</groupId>
 	<artifactId>profile-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>profile-service</name>
