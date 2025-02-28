@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Document(collection = "Bids")
+@Document(collection = "bids")
 @Getter
 @Setter
 @AllArgsConstructor
