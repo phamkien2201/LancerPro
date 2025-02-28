@@ -7,12 +7,14 @@ import com.lancer.project.dto.response.ProjectListResponse;
 import com.lancer.project.dto.response.UserResponse;
 import com.lancer.project.entity.Category;
 import com.lancer.project.entity.Project;
+import com.lancer.project.entity.ProjectIndex;
 import com.lancer.project.entity.ProjectStatus;
 import com.lancer.project.exception.AppException;
 import com.lancer.project.exception.ErrorCode;
 import com.lancer.project.mapper.ProjectMapper;
 import com.lancer.project.repository.CategoryRepository;
 import com.lancer.project.repository.ProjectRepository;
+import com.lancer.project.repository.ProjectSearchRepository;
 import com.lancer.project.repository.httpclient.UserClient;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +42,7 @@ public class ProjectService {
     ProjectRepository projectRepository;
     CategoryRepository categoryRepository;
     UserClient userClient;
+    ProjectSearchRepository projectSearchRepository;
 
     public ProjectResponse createProject(ProjectRequest request){
         ApiResponse<UserResponse> user = userClient.getUser(request.getClientId());
@@ -49,6 +52,13 @@ public class ProjectService {
         Project project = projectMapper.toProject(request);
         project.setStatus(ProjectStatus.OPEN);
         project = projectRepository.save(project);
+
+        ProjectIndex projectIndex = new ProjectIndex(
+                project.getId(), project.getTitle(), project.getDescription(),
+                project.getCategoryId(), project.getBudgetMin(), project.getBudgetMax(),
+                project.getSkills(), project.getAddress(), project.getStatus(), project.getDeadline()
+        );
+        projectSearchRepository.save(projectIndex);
         return projectMapper.toProjectResponse(project);
     }
 

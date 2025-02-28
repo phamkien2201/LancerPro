@@ -4,6 +4,8 @@ import com.lancer.project.dto.ApiResponse;
 import com.lancer.project.dto.request.ProjectRequest;
 import com.lancer.project.dto.response.ProjectListResponse;
 import com.lancer.project.dto.response.ProjectResponse;
+import com.lancer.project.entity.ProjectIndex;
+import com.lancer.project.repository.ProjectSearchRepository;
 import com.lancer.project.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -26,6 +28,7 @@ import java.util.List;
 public class ProjectController {
 
     ProjectService projectService;
+    ProjectSearchRepository projectSearchRepository;
 
     @PostMapping("/create")
     @Operation(summary = "Tạo dự án")
@@ -150,6 +153,19 @@ public class ProjectController {
             @RequestParam("status") String status) {
         projectService.updateProjectStatus(projectId, status);
         return ApiResponse.<Void>builder().build();
+    }
+
+    @GetMapping("/search")
+    public List<ProjectIndex> searchProjects(
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "skills", required = false) List<String> skills
+    ) {
+        if (title != null) {
+            return projectSearchRepository.findByTitleContainingIgnoreCase(title);
+        } else if (skills != null && !skills.isEmpty()) {
+            return projectSearchRepository.findBySkillsIn(skills);
+        }
+        return (List<ProjectIndex>) projectSearchRepository.findAll();
     }
 
     @DeleteMapping("/delete/{projectId}")

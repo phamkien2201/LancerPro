@@ -3,6 +3,12 @@ package com.lancer.project.service;
 import com.lancer.project.dto.request.CategoryRequest;
 import com.lancer.project.entity.Category;
 import com.lancer.project.repository.CategoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.query.Criteria;
+import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.SearchHit;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,6 +27,8 @@ import java.util.List;
 public class CategoryService {
 
     CategoryRepository categoryRepository;
+    @Autowired
+    ElasticsearchOperations elasticsearchOperations;
 
     @PreAuthorize("hasRole('ADMIN')")
     public void createCategory(CategoryRequest categoryDTO) {
@@ -30,6 +38,7 @@ public class CategoryService {
                 .parentId(categoryDTO.getParentId())
                 .build();
         categoryRepository.save(newCategory);
+        elasticsearchOperations.save(newCategory);
     }
 
     public Category getCategoryById(String id) {
@@ -50,18 +59,27 @@ public class CategoryService {
         existingCategory.setName(categoryDTO.getName());
         existingCategory.setId(categoryDTO.getParentId());
         categoryRepository.save(existingCategory);
+        elasticsearchOperations.save(existingCategory);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteCategory(String id) {
         categoryRepository.deleteById(id);
+        elasticsearchOperations.delete(id, Category.class);
     }
 
     public List<Category> findCategoryByParentId(String parentId) {
         return categoryRepository.findByParentId(parentId);
     }
     public List<Category> findCategoryByName(String name) {
-        return categoryRepository.findByNameContainingIgnoreCase(name);
+        Criteria criteria = new Criteria("name").contains(name);
+        CriteriaQuery query = new CriteriaQuery(criteria);
+
+        SearchHits<Category> searchHits = elasticsearchOperations.search(query, Category.class);
+
+        return searchHits.stream()
+                .map(SearchHit::getContent)
+                .toList();
     }
 
 
