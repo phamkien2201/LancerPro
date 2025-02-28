@@ -1,4 +1,4 @@
-package com.lancer.project.configuration;
+package com.lancer.bid.configuration;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

@@ -23,7 +23,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@RequestMapping("/projects")
 public class ProjectController {
 
     ProjectService projectService;
@@ -144,7 +143,7 @@ public class ProjectController {
                 .build();
     }
 
-    @PutMapping("/{project}/status")
+    @PutMapping("/{projectId}/status")
     @Operation(summary = "Cập nhật trạng thái dự án")
     public ApiResponse<Void> updateProjectStatus(
             @PathVariable String projectId,

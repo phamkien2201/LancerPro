@@ -1,0 +1,30 @@
+server:
+  port: 8085
+  servlet:
+    context-path: /bids
+spring:
+  application:
+    name: bid-service
+  data:
+    mongodb:
+      uri: mongodb://root:root@localhost:27017/bid-service?authSource=admin
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  kafka:
+    bootstrap-servers: localhost:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: bid-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+app:
+  services:
+    identity: http://localhost:8080/identity
+    projects: http://localhost:8083/projects

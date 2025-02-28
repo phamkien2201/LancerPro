@@ -1,10 +1,6 @@
-package com.lancer.project.dto.request;
+package com.lancer.bid.dto.response;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
@@ -16,8 +12,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ProjectRequest {
-
+public class ProjectResponse {
+    String id;
     String title;
     String description;
     String categoryId;

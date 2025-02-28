@@ -20,7 +20,7 @@ public class ProjectResponse {
     String id;
     String title;
     String description;
-    String category;
+    String categoryId;
     BigDecimal budgetMin;
     BigDecimal budgetMax;
     List<String> skills;

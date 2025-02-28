@@ -26,7 +26,7 @@ public class Project extends BaseEntity{
 
     String description;
 
-    String category;
+    String categoryId;
 
     @Field("budget_min")
     BigDecimal budgetMin;
